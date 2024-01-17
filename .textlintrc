@@ -1,0 +1,29 @@
+{
+  "plugins": {},
+  "filters": {},
+  "rules": {
+    // 文末を句点記号(。)に統一
+    "ja-no-mixed-period": {
+      "allowPeriodMarks": [
+        "]"
+      ]
+    },
+    // 表記ゆれを検出する（表記統合辞書に基づく）
+    "ja-no-orthographic-variants": {
+      // 直すべき部分とそうでない部分両方含むため、warningとする
+      "severity": "warning"
+    },
+    // インラインコードの前後にスペースを入れない
+    "ja-space-around-code": false,
+    // 半角文字と全角文字の間にスペースを入れる
+    "ja-space-between-half-and-full-width": {
+      "space": "always",
+      // マークダウン装飾文字も対象とする
+      "lintStyledNode": true
+    },
+    // ら抜き言葉を検出する
+    "no-dropping-the-ra": true,
+    // アルファベットは半角のみ使用する
+    "no-mixed-zenkaku-and-hankaku-alphabet": true
+  }
+}

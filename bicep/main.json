@@ -1,0 +1,194 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.12.40.16777",
+      "templateHash": "3571790342760207038"
+    }
+  },
+  "parameters": {
+    "appName": {
+      "type": "string"
+    },
+    "appServicePlanSku": {
+      "type": "string",
+      "defaultValue": "F1"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    }
+  },
+  "variables": {
+    "appPrefix": "[format('{0}{1}', parameters('appName'), substring(uniqueString(resourceGroup().id), 0, 4))]",
+    "appServicePlanName": "[format('plan-{0}', variables('appPrefix'))]",
+    "webAppName": "[format('app-{0}', variables('appPrefix'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "appServicePlanDeploy",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('appServicePlanName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sku": {
+            "value": "[parameters('appServicePlanSku')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.12.40.16777",
+              "templateHash": "3975260322529268661"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "sku": {
+              "type": "string",
+              "metadata": {
+                "description": "App Service Plan's pricing tier. Details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+              },
+              "allowedValues": [
+                "F1",
+                "D1",
+                "B1",
+                "B2",
+                "B3",
+                "S1",
+                "S2",
+                "S3",
+                "P1v2",
+                "P2v2",
+                "P3v2",
+                "P1v3",
+                "P2v3",
+                "P3v3"
+              ]
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('sku')]"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Web/serverfarms', parameters('name'))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "webAppDeploy",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('webAppName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "appServicePlanId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'appServicePlanDeploy'), '2020-10-01').outputs.id.value]"
+          },
+          "netFrameworkVersion": {
+            "value": "v6.0"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.12.40.16777",
+              "templateHash": "4131584273176080697"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "appServicePlanId": {
+              "type": "string"
+            },
+            "netFrameworkVersion": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "serverFarmId": "[parameters('appServicePlanId')]",
+                "reserved": true,
+                "httpsOnly": true,
+                "clientAffinityEnabled": false,
+                "siteConfig": {
+                  "netFrameworkVersion": "[parameters('netFrameworkVersion')]",
+                  "alwaysOn": false,
+                  "http20Enabled": false,
+                  "ftpsState": "FtpsOnly"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Web/sites', parameters('name'))]"
+            },
+            "defaultHostName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Web/sites', parameters('name')), '2022-03-01').defaultHostName]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'appServicePlanDeploy')]"
+      ]
+    }
+  ]
+}

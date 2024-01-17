@@ -1,0 +1,40 @@
+name: Run textlint and comment error log to Pull Request
+on: 
+  pull_request:
+    types: 
+      - opened
+      - synchronize 
+    # ドキュメント更新時のみ動く
+    paths: 
+      - 'docs/*.md'
+      - 'README.md' 
+
+jobs:
+  run-textlint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+
+      - name: npm install
+        run: |
+          npm install
+
+      - name: npx textlint
+        run: |
+          npx textlint ./docs/*.md README.md >> ./.textlint.log
+
+      - if: ${{ failure() }}
+        # プルリクエストのコメントに textlint の実行結果を出力
+        run: gh pr comment --body-file ./.textlint.log "${URL}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          URL: ${{ github.event.pull_request.html_url }}
