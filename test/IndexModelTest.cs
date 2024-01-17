@@ -10,8 +10,8 @@ namespace SampleApplication.Test
         [Fact]
         public void Test1()
         {
-            var logger = default(ILogger<IndexModel>); // わざとテスト失敗するための設定
-            // var logger = new MockLogger<IndexModel>(); // この行を使用するとテスト成功
+            //var logger = default(ILogger<IndexModel>); // わざとテスト失敗するための設定
+            var logger = new MockLogger<IndexModel>(); // この行を使用するとテスト成功
 
             var actual = new IndexModel(logger);
             Assert.NotNull(actual);
